@@ -20,7 +20,6 @@ int main()
   struct sockaddr_in address;
   request_t request, response;
   int result;
-  char ch = 'D';
 
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -36,10 +35,10 @@ int main()
 		perror("oops: client2");
 		exit(1);
   }
-  char* inter = "dale inter";
+  char* inter = "bom";
   strcpy(&request.body[0], inter);
   request.op = 0;
-  request.line = 0;
+  request.line = 3;
 	write(sockfd, &request, sizeof(request_t));
 	sleep(2);
 	read(sockfd, &response, sizeof(request_t));

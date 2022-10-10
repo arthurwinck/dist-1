@@ -26,17 +26,6 @@ typedef struct {
     int line;
 } request_t;
 
-int write_text() {
-    //fprintf
-    return 0;
-}
-
-int get_text() {
-    //fscanf
-    return 0;
-}
-
-
 int start_server (int port, int max_con) {
     unsigned int server_len, client_len;
     struct sockaddr_in server_address;
@@ -64,60 +53,46 @@ int read_command(char* command) {
 }
 
 int connect_client(connection_param* c_params) {
-    // request_t command;
-    // request_t response;
-    // /*  Ler o comando, checar se o comando é válido e iniciar
-    //     a escrita na linha de texto
-    // */
-    // printf("AUX:%d - %d Lendo Request de Cliente\n", getpid(), c_params->thread_id);
-    // read(c_params->client_sockfd, &command, sizeof(request_t));
-    
-    // // Checar qual operação é
-    // // Escrever ou ler
-    // printf("op: %d\n", command.op);
-    // printf("body: %d\n", command.body);
-    // // 
-    // /*
-    //     Dar uma resposta positiva ou negativa
-    // */
-    // // Testar para ver se foi possível realizar a operação
-    // int success = 1;
-   
-    // if (success) {
-    //     strcpy(response.body, 'Success');
-    //     response.op = 0;
-    // }
-    // write(c_params->client_sockfd, (void*) &response, sizeof(response));
     c_params = (connection_param*) c_params;
     
     request_t command;
     request_t response;
-    char* body_response;
+    char body_response[30];
     FILE* text;
-    char buffer[30];
 
 
     read(c_params->client_sockfd, &command, sizeof(request_t));
-    printf("AUX:%d - TI:%d Operação Cliente: %d\n", getpid(), c_params->thread_id, command.op);
-    printf("AUX:%d - TI:%d Body Cliente: %s\n", getpid(), c_params->thread_id, command.body);
+    //printf("AUX:%d - TI:%d Operação Cliente: %d\n", getpid(), c_params->thread_id, command.op);
+    //printf("AUX:%d - TI:%d Body Cliente: %s\n", getpid(), c_params->thread_id, command.body);
     //fseek(text, 0, SEEK_SET);
     //fscanf(text, "%s\n", &buffer[0]);
     //printf("AUX:%d - TI:%d - %s\n", getpid(), c_params->thread_id, &buffer[0]);
     //printf("AUX:%d - TI:%d - %p\n", getpid(), c_params->thread_id, c_params->text);
 
-    text = fopen("text.txt", "wr");
+    text = fopen("text.txt", "a+");
 
     if (command.op == 0 || command.op == 1) {
         // Leitura
         if (command.op == 0) {
-            fseek(text, command.line*30, SEEK_SET);
-            if (fscanf(text, "%s\n", &response.body[0])) {
-                response.op = 1;
-                //body_response = "sucesso";
-            } else {
-                response.op = -1;
-                //body_response = "falha";
-            };
+            printf("AUX:%d - TI:%d - Lendo a linha n: %d no arquivo\n", getpid(), c_params->thread_id, command.line);
+            fseek(text, 0, SEEK_SET);
+            //printf("Setei o cursor do arquivo\n");
+            int line = 0;
+        
+            while(1) {
+                //printf("Line: %d\n", line);
+                if (fscanf(text, "%s", body_response)) {
+                    if (line == command.line) {
+                        response.op = 1;
+                        break;
+                    }
+                }  else {
+                        response.op = -1;
+                        printf("Erro ao ler o arquivo\n");
+                        break;
+                }
+                line++;
+            }
         } 
         // Escrita
         else {
@@ -125,11 +100,11 @@ int connect_client(connection_param* c_params) {
             printf("AUX:%d - TI:%d - Escrevendo %s no arquivo\n", getpid(), c_params->thread_id, command.body);
             if (fprintf(text, "%s\n", &command.body[0])) {
                 response.op = 1;
-                body_response = "sucesso";
+                strcpy(body_response, "sucesso");
                 printf("Sucesso!\n");
             } else {
                 response.op = -1;
-                body_response = "falha";
+                strcpy(body_response, "falha");
                 printf("Falha!\n");
             };
         }
