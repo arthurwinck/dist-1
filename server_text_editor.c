@@ -1,3 +1,5 @@
+// gcc server_text_editor.c thread_node.h -o server_text_editor
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
