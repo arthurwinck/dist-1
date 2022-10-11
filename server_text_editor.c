@@ -10,7 +10,7 @@
 #include <pthread.h>
 #include <string.h>
 #include "thread_node.h"
-
+#include <semaphore.h>
 
 // Usar fprintf
 // usar fscanf
@@ -20,6 +20,7 @@ typedef struct  {
     int thread_id;
     //FILE* text;
     char* file_name;
+    sem_t* sem;
 } connection_param;
 
 typedef struct {
@@ -71,6 +72,7 @@ int connect_client(connection_param* c_params) {
     //printf("AUX:%d - TI:%d - %s\n", getpid(), c_params->thread_id, &buffer[0]);
     //printf("AUX:%d - TI:%d - %p\n", getpid(), c_params->thread_id, c_params->text);
 
+    sem_wait(c_params->sem);
     text = fopen("text.txt", "a+");
 
     if (command.op == 0 || command.op == 1) {
@@ -112,6 +114,7 @@ int connect_client(connection_param* c_params) {
         }
     }
     fclose(text);
+    sem_post(c_params->sem);
     strcpy(&response.body[0], body_response);
     write(c_params->client_sockfd, &response, sizeof(request_t));
     return 0;
@@ -127,6 +130,8 @@ int main() {
     // fclose(text);
 
     thread_node_t* head = NULL;
+    sem_t sem;
+    sem_init(&sem, 0, 1);
 
     pthread_t* thread_teste = malloc(sizeof(pthread_t));
 
@@ -148,6 +153,7 @@ int main() {
         c_param.client_sockfd = client_sockfd;
         c_param.thread_id = thread_id;
         c_param.file_name = "text.txt";
+        c_param.sem = &sem;
         //c_param.text = text;
 
         if (head == NULL) {

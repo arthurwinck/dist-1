@@ -69,7 +69,7 @@ int main(int argc, char** argv)
   request.line = req_line;
 
 	write(sockfd, &request, sizeof(request_t));
-	sleep(5);
+	sleep(1);
 	read(sockfd, &response, sizeof(request_t));
 
   if (response.op != 1) {
